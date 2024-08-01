@@ -8,7 +8,7 @@ import re
 from typing import List
 
 
-logger = logging.getLogger(__name__)
+PII_FIELDS = ("name", "email", "phone", "ssn", "password")
 
 
 def filter_datum(
@@ -27,7 +27,6 @@ class RedactingFormatter(logging.Formatter):
     REDACTION = "***"
     FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
     SEPARATOR = ";"
-    logging.basicConfig(format=FORMAT, level=logging.INFO)
 
     def __init__(self, fields: List[str]):
         """Initialize logger."""
@@ -43,3 +42,21 @@ class RedactingFormatter(logging.Formatter):
             separator=self.SEPARATOR,
         )
         return super(RedactingFormatter, self).format(record=record)
+
+
+def get_logger() -> logging.Logger:
+    """
+    Return a logger object for user data.
+
+    Returns:
+        logging.Logger: A logger object for handling user data logs.
+    """
+    logger = logging.getLogger(name="user_data")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(RedactingFormatter(list(PII_FIELDS)))
+    logger.addHandler(stream_handler)
+
+    return logger
