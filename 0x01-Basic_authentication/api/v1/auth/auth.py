@@ -2,7 +2,7 @@
 
 """This module implements base class for Authentication mechanisms."""
 
-from typing import List, TypeVar
+from typing import List, TypeVar, Union
 
 User = TypeVar("User")
 
@@ -20,9 +20,13 @@ class Auth:
 
         return path not in excluded_paths
 
-    def authorization_header(self, request=None) -> str:
+    @staticmethod
+    def authorization_header(request=None) -> Union[str, None]:
         """Return the value of the Authorization header."""
-        return None
+        if not request:
+            return None
+
+        return request.headers.get("Authorization")
 
     def current_user(self, request=None) -> User:
         """Return the current user."""
