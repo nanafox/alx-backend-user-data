@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 """This module implements the Basic Authentication mechanism."""
+import base64
+import binascii
 
 from api.v1.auth.auth import Auth
 
@@ -20,3 +22,20 @@ class BasicAuth(Auth):
             return None
 
         return authorization_header[6:]
+
+    @staticmethod
+    def decode_base64_authorization_header(
+        base64_authorization_header: str,
+    ):
+        """Decode a base64 string."""
+        if not base64_authorization_header or not isinstance(
+            base64_authorization_header, str
+        ):
+            return None
+
+        try:
+            return base64.b64decode(
+                base64_authorization_header.encode("utf-8")
+            ).decode("utf-8")
+        except binascii.Error:
+            return None
