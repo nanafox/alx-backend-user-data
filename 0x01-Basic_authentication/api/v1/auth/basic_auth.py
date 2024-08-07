@@ -3,6 +3,7 @@
 """This module implements the Basic Authentication mechanism."""
 import base64
 import binascii
+from typing import Tuple, Union
 
 from api.v1.auth.auth import Auth
 
@@ -39,3 +40,18 @@ class BasicAuth(Auth):
             ).decode("utf-8")
         except binascii.Error:
             return None
+
+    @staticmethod
+    def extract_user_credentials(
+        user_credentials: str,
+    ) -> Union[Tuple[None, None], Tuple[str, str]]:
+        """Extract the user credentials."""
+        if not user_credentials or not isinstance(user_credentials, str):
+            return None, None
+
+        if ":" not in user_credentials:
+            return None, None
+
+        username, password = user_credentials.split(":", 1)
+
+        return username, password
