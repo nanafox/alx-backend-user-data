@@ -50,21 +50,28 @@ def forbidden(_) -> Tuple[Dict, int]:
 
 
 @app.before_request
-def before_request():
+def auth_middleware():
     """Before request handler."""
     if auth is None:
-        return
+        return None
 
     excluded_paths = [
         "/api/v1/status/",
         "/api/v1/unauthorized/",
         "/api/v1/forbidden/",
+        "/api/v1/auth_session/login/",
     ]
 
     if not auth.require_auth(request.path, excluded_paths):
-        return
+        return None
 
-    if not auth.authorization_header(request):
+    auth_header = auth.authorization_header(request)
+    session_cookie = auth.session_cookie(request)
+
+    if auth_header and session_cookie:  # one auth type at a time.
+        return None
+
+    if not auth_header and not session_cookie:  # no auth type provided.
         abort(401)
 
     user = auth.current_user(request)
