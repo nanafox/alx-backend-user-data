@@ -3,9 +3,12 @@
 """This module implements the Basic Authentication mechanism."""
 import base64
 import binascii
-from typing import Tuple, Union
+from typing import Tuple, TypeVar, Union
 
 from api.v1.auth.auth import Auth
+from models.user import User as DBUser
+
+User = TypeVar("User")
 
 
 class BasicAuth(Auth):
@@ -55,3 +58,18 @@ class BasicAuth(Auth):
         username, password = user_credentials.split(":", 1)
 
         return username, password
+
+    @staticmethod
+    def user_object_from_credentials(user_email: str, user_pwd: str) -> User:
+        """Return the User instance based on email and password."""
+        if not user_email or not isinstance(user_email, str):
+            return None
+
+        if not user_pwd or not isinstance(user_pwd, str):
+            return None
+
+        db_user = DBUser.search({"email": user_email})
+        if db_user and db_user[0].is_valid_password(user_pwd):
+            return db_user[0]
+
+        return None
