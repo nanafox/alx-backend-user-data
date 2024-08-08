@@ -25,6 +25,10 @@ elif auth_type == "auth":
     from api.v1.auth.auth import Auth
 
     auth = Auth()
+elif auth_type == "session_auth":
+    from api.v1.auth.session_auth import SessionAuth
+
+    auth = SessionAuth()
 
 
 @app.errorhandler(404)
