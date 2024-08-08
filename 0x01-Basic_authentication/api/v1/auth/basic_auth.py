@@ -70,7 +70,11 @@ class BasicAuth(Auth):
         if not user_pwd or not isinstance(user_pwd, str):
             return None
 
-        db_user = DBUser.search({"email": user_email})
+        try:
+            db_user = DBUser.search({"email": user_email})
+        except KeyError:
+            return None
+
         if db_user and db_user[0].is_valid_password(user_pwd):
             return db_user[0]
 
