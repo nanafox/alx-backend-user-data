@@ -18,6 +18,11 @@ class Auth:
 
         path = path.rstrip("/") + "/"
 
+        for exc_path in excluded_paths:
+            # perform a simple a regex to accept paths matching the pattern
+            if path.startswith(exc_path.rstrip("*")):
+                return False
+
         return path not in excluded_paths
 
     @staticmethod
