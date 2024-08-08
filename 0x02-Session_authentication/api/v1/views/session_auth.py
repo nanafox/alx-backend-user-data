@@ -3,7 +3,7 @@
 """This module defines routes for session authentication."""
 import os
 
-from flask import jsonify, request
+from flask import abort, jsonify, request
 
 from api.v1.views import app_views
 from models.user import User as DBUser
@@ -38,3 +38,16 @@ def login():
     data.set_cookie(os.environ.get("SESSION_NAME"), session_id)
 
     return data
+
+
+@app_views.route(
+    "/auth_session/logout", methods=["DELETE"], strict_slashes=False
+)
+def logout():
+    """Log user out and delete session."""
+    from api.v1.app import auth
+
+    if not auth.destroy_session(request):
+        abort(404)
+
+    return jsonify({}), 200
