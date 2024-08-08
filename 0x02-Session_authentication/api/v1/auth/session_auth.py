@@ -4,7 +4,8 @@
 from typing import Union
 from uuid import uuid4
 
-from api.v1.auth.auth import Auth
+from api.v1.auth.auth import Auth, User
+from models.user import User as DBUser
 
 
 class SessionAuth(Auth):
@@ -46,3 +47,10 @@ class SessionAuth(Auth):
             return None
 
         return SessionAuth.user_id_by_session_id.get(session_id)
+
+    def current_user(self, request=None) -> User:
+        """Return the current authenticated user."""
+        cookie = self.session_cookie(request)
+        user_id = self.user_id_for_session_id(session_id=cookie)
+
+        return DBUser.get(id=user_id)
