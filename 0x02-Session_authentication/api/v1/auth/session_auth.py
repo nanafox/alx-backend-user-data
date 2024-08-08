@@ -29,3 +29,20 @@ class SessionAuth(Auth):
         SessionAuth.user_id_by_session_id[session_id] = user_id
 
         return session_id
+
+    @staticmethod
+    def user_id_for_session_id(session_id: str = None) -> Union[str, None]:
+        """Return the User ID for the user who owns a give session ID.
+
+        Args:
+            session_id (str): The session ID presented by the user making
+            the request.
+
+        Returns:
+            None if the session ID is invalid, or no such Session ID exists.
+            Otherwise, the User ID for the given Session ID is returned.
+        """
+        if not session_id or not isinstance(session_id, str):
+            return None
+
+        return SessionAuth.user_id_by_session_id.get(session_id)
