@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
 """This module implements session authentication that is saved in database."""
-from typing import Union
+
+from typing import TypeVar, Union
 
 from api.v1.auth.session_exp_auth import SessionExpAuth
-from models.user_session import UserSession
+from models.user_session import UserSession as DBUserSession
+
+UserSession = TypeVar("UserSession")
 
 
 class SessionDBAuth(SessionExpAuth):
@@ -17,7 +20,7 @@ class SessionDBAuth(SessionExpAuth):
             return None
 
         try:
-            session: UserSession = UserSession.search(
+            session: UserSession = DBUserSession.search(
                 {"session_id": session_id}
             )[0]
         except (KeyError, IndexError):
@@ -41,7 +44,7 @@ class SessionDBAuth(SessionExpAuth):
         if not session_id:
             return None
 
-        session: UserSession = UserSession(
+        session: UserSession = DBUserSession(
             session_id=session_id, user_id=user_id
         )
         session.save()
