@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """This module implements session authentication that is saved in database."""
-
+from datetime import datetime, timedelta
 from typing import TypeVar, Union
 
 from api.v1.auth.session_exp_auth import SessionExpAuth
@@ -44,8 +44,8 @@ class SessionDBAuth(SessionExpAuth):
         if not session_id:
             return None
 
-        session: UserSession = DBUserSession(
-            session_id=session_id, user_id=user_id
+        session = DBUserSession(
+            session_id=session_id, user_id=user_id, id=session_id
         )
         session.save()
 
@@ -58,6 +58,17 @@ class SessionDBAuth(SessionExpAuth):
         based on the `session_id`."""
         session = self.get_db_session(session_id=session_id)
         if not session:
+            return None
+
+        if self.session_duration <= 0:
+            return session.user_id
+
+        if not session.created_at:
+            return None
+
+        if datetime.now() > session.created_at + timedelta(
+            seconds=self.session_duration
+        ):
             return None
 
         return session.user_id
