@@ -33,6 +33,28 @@ class DB:
             self.__session = db_session()
         return self.__session
 
+    @staticmethod
+    def _valid_attributes(**kwargs) -> bool:
+        """Validate keyword arguments against User class attributes.
+
+        Check if the provided keyword arguments are valid attributes of the
+        User class.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments representing user attributes.
+
+        Returns:
+            bool: True if all provided keys are valid User attributes,
+            False otherwise.
+        """
+        user_dict_keys = set(User.__dict__.keys())
+        kw_dict_keys = set(kwargs.keys())
+
+        if not kw_dict_keys.issubset(user_dict_keys):
+            return False
+
+        return True
+
     def add_user(self, email: str, hashed_password: str) -> User:
         """Create and save a new user to the database.
 
@@ -66,10 +88,7 @@ class DB:
         if not kwargs:
             raise InvalidRequestError("No search parameters provided.")
 
-        user_dict_keys = set(User.__dict__.keys())
-        kw_dict_keys = set(kwargs.keys())
-
-        if not kw_dict_keys.issubset(user_dict_keys):
+        if not self._valid_attributes(**kwargs):
             raise InvalidRequestError("Invalid search parameters provided.")
 
         db_user = self._session.query(User).filter_by(**kwargs).first()
@@ -77,3 +96,24 @@ class DB:
             raise NoResultFound("No user found with the given parameters.")
 
         return db_user
+
+    def update_user(self, user_id: int, **kwargs) -> None:
+        """Update an instance of a user.
+
+        Args:
+            user_id (int): The ID of the user to update.
+            **kwargs: Arbitrary keyword arguments representing user attributes
+             to update.
+
+        Raises:
+            ValueError: If any provided key is not a valid user attribute.
+        """
+        if not self._valid_attributes(**kwargs):
+            raise ValueError("Unrecognized arguments for User.")
+
+        db_user = self.find_user_by(id=user_id)
+        for key, value in kwargs.items():
+            setattr(db_user, key, value)
+
+        self._session.add(db_user)
+        self._session.commit()
