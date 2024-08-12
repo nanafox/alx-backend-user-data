@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 """DB module."""
-
 from os import getenv
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.session import Session
 
 # noinspection PyCompatibility
@@ -44,5 +45,35 @@ class DB:
         """
         db_user = User(email=email, hashed_password=hashed_password)
         self._session.add(db_user)
+
         self._session.commit()
+        return db_user
+
+    def find_user_by(self, **kwargs) -> User:
+        """Search and return user by a given field.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments representing user attributes.
+
+        Raises:
+            InvalidRequestError: If no keyword arguments are provided or if
+             any provided key is not a valid user attribute.
+            NoResultFound: If no user is found with the given attributes.
+
+        Returns:
+            User: The user object that matches the given attributes.
+        """
+        if not kwargs:
+            raise InvalidRequestError("No search parameters provided.")
+
+        user_dict_keys = set(User.__dict__.keys())
+        kw_dict_keys = set(kwargs.keys())
+
+        if not kw_dict_keys.issubset(user_dict_keys):
+            raise InvalidRequestError("Invalid search parameters provided.")
+
+        db_user = self._session.query(User).filter_by(**kwargs).first()
+        if not db_user:
+            raise NoResultFound("No user found with the given parameters.")
+
         return db_user
