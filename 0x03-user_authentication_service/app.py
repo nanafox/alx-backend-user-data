@@ -86,5 +86,20 @@ def profile() -> Response:
     return jsonify({"email": db_user.email})
 
 
+@app.route("/reset_password", methods=["POST"])
+def get_reset_password_token() -> Tuple[Response, int]:
+    """Get the token for user password reset."""
+    email = request.form.get("email")
+    if not email:
+        return jsonify({"message": "email missing"}), 400
+
+    try:
+        reset_token = AUTH.get_reset_password_token(email=email)
+    except ValueError:
+        return jsonify({"message": "Invalid email"}), 400
+
+    return jsonify({"email": email, "reset_token": reset_token}), 200
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=os.getenv("DEBUG") == "True")
