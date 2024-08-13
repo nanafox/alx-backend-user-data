@@ -8,6 +8,7 @@ import bcrypt
 from sqlalchemy.orm.exc import NoResultFound
 
 from db import DB
+
 # noinspection PyCompatibility
 from user import User
 
@@ -155,3 +156,17 @@ class Auth:
         self._db.update_user(user_id=db_user.id, reset_token=reset_token)
 
         return reset_token
+
+    def update_password(self, reset_token: str, password: str) -> None:
+        """Reset user password."""
+        try:
+            db_user = self._db.find_user_by(reset_token=reset_token)
+        except NoResultFound:
+            raise ValueError("Reset token is invalid or expired")
+
+        hashed_password = _hash_password(password).decode()
+        self._db.update_user(
+            user_id=db_user.id,
+            hashed_password=hashed_password,
+            reset_token=None,  # expire the token
+        )
