@@ -125,3 +125,19 @@ class Auth:
             return None
 
         return db_user
+
+    def destroy_session(self, user_id: int) -> None:
+        """Destroy a user session.
+
+        After a session is destroyed, a fresh login will be required to
+        receive another session ID.
+
+        Args:
+            user_id (int): The ID of the user whose session is to be destroyed.
+        """
+        try:
+            self._db.find_user_by(id=user_id)
+        except NoResultFound:
+            raise ValueError(f"{user_id} is not a valid user ID.")
+
+        self._db.update_user(user_id=user_id, session_id=None)
