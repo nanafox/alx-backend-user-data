@@ -4,7 +4,7 @@
 import os
 from typing import Tuple
 
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, abort, jsonify, request
 
 from auth import Auth
 
@@ -34,6 +34,29 @@ def signup() -> Tuple[Response, int]:
         return jsonify({"message": err_msg}), 400
 
     return jsonify({"email": email, "message": "user created"}), 201
+
+
+@app.route("/sessions", methods=["POST"])
+def login():
+    """User login endpoint.
+
+    This endpoint accepts and logs user into the system if the credentials
+    provided are valid. In the event of invalid data, the user receives an
+    authorization error with the code 401.
+
+    Upon successful login, a session is created for the authenticated user.
+    """
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    if not AUTH.valid_login(email=email, password=password):
+        abort(401)
+
+    session_id = AUTH.create_session(email=email)
+    data = jsonify({"email": email, "message": "logged in"})
+    data.set_cookie(key="session_id", value=session_id)
+
+    return data
 
 
 if __name__ == "__main__":
