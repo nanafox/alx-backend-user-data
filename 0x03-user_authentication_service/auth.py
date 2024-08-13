@@ -100,3 +100,28 @@ class Auth:
         )
 
         return db_user.session_id
+
+    def get_user_from_session_id(self, session_id: str) -> Union[User, None]:
+        """Get the user object related with a session ID.
+
+        The user whose session ID is presented will be returned if found in
+        the database. Otherwise, nothing (`None`) is returned as the user
+        was not found in the database.
+
+
+        Args:
+            session_id (str): The session ID of the user searched for.
+
+        Returns:
+            User | None: The user whose `session_id` was received if found,
+            None otherwise.
+        """
+        if not session_id:
+            return None
+
+        try:
+            db_user = self._db.find_user_by(session_id=session_id)
+        except NoResultFound:
+            return None
+
+        return db_user
