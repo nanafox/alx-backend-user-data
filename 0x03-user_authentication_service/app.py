@@ -23,7 +23,7 @@ def root():
 
 
 @app.route("/users", methods=["POST"])
-def signup() -> Tuple[Response, int]:
+def users() -> Tuple[Response, int]:
     """Register new user."""
     success, err_msg = utils.request_body_provided(
         expected_fields={"email", "password"}
