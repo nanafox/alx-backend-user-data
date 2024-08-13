@@ -8,7 +8,6 @@ import bcrypt
 from sqlalchemy.orm.exc import NoResultFound
 
 from db import DB
-
 # noinspection PyCompatibility
 from user import User
 
@@ -141,3 +140,18 @@ class Auth:
             raise ValueError(f"{user_id} is not a valid user ID.")
 
         self._db.update_user(user_id=user_id, session_id=None)
+
+    def get_reset_password_token(self, email: str) -> str:
+        """Return the token for user password reset."""
+        if not email:
+            raise ValueError("email missing")
+
+        try:
+            db_user = self._db.find_user_by(email=email)
+        except NoResultFound as err:
+            raise ValueError(f"User with email {email} not found") from err
+
+        reset_token = self._generate_uuid()
+        self._db.update_user(user_id=db_user.id, reset_token=reset_token)
+
+        return reset_token
