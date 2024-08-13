@@ -101,5 +101,43 @@ def get_reset_password_token() -> Tuple[Response, int]:
     return jsonify({"email": email, "reset_token": reset_token}), 200
 
 
+@app.route("/reset_password", methods=["PUT"])
+def update_password() -> Tuple[Response, int]:
+    """Update the user's password."""
+    if not request.form:
+        return (
+            jsonify(
+                {
+                    "message": "request body missing",
+                    "expected_fields": [
+                        "email",
+                        "reset_token",
+                        "new_password",
+                    ],
+                }
+            ),
+            400,
+        )
+
+    email = request.form.get("email")
+    if not email:
+        return jsonify({"message": "email missing"}), 400
+
+    reset_token = request.form.get("reset_token")
+    if not reset_token:
+        return jsonify({"message": "reset_token missing"}), 400
+
+    new_password = request.form.get("new_password")
+    if not new_password:
+        return jsonify({"message": "new_password missing"}), 400
+
+    try:
+        AUTH.update_password(reset_token=reset_token, password=new_password)
+    except ValueError:
+        abort(403)
+
+    return jsonify({"email": email, "message": "Password updated"}), 200
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=os.getenv("DEBUG") == "True")
