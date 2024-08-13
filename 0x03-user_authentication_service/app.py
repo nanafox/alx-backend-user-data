@@ -4,7 +4,8 @@
 import os
 from typing import Tuple
 
-from flask import Flask, Response, abort, jsonify, request
+from flask import Flask, abort, jsonify, redirect, request
+from werkzeug import Response
 
 from auth import Auth
 
@@ -37,7 +38,7 @@ def signup() -> Tuple[Response, int]:
 
 
 @app.route("/sessions", methods=["POST"])
-def login():
+def login() -> Response:
     """User login endpoint.
 
     This endpoint accepts and logs user into the system if the credentials
@@ -57,6 +58,18 @@ def login():
     data.set_cookie(key="session_id", value=session_id)
 
     return data
+
+
+@app.route("/sessions", methods=["DELETE"])
+def logout() -> Response:
+    """Log user out of the session."""
+    session_id = request.cookies.get("session_id")
+    user = AUTH.get_user_from_session_id(session_id=session_id)
+    if not user:
+        abort(403)
+
+    AUTH.destroy_session(user_id=user.id)
+    return redirect(location="/")
 
 
 if __name__ == "__main__":
