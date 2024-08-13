@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 """App module."""
+
 import os
 from typing import Tuple
 
 from flask import Flask, abort, jsonify, redirect, request
 from werkzeug import Response
 
+import utils
 from auth import Auth
 
 AUTH = Auth()
@@ -23,6 +25,12 @@ def root():
 @app.route("/users", methods=["POST"])
 def signup() -> Tuple[Response, int]:
     """Register new user."""
+    success, err_msg = utils.request_body_provided(
+        expected_fields={"email", "password"}
+    )
+    if not success:
+        return jsonify({"message": err_msg}), 400
+
     email = request.form.get("email")
     password = request.form.get("password")
 
@@ -38,7 +46,7 @@ def signup() -> Tuple[Response, int]:
 
 
 @app.route("/sessions", methods=["POST"])
-def login() -> Response:
+def login() -> Tuple[Response, int]:
     """User login endpoint.
 
     This endpoint accepts and logs user into the system if the credentials
@@ -47,6 +55,12 @@ def login() -> Response:
 
     Upon successful login, a session is created for the authenticated user.
     """
+    success, err_msg = utils.request_body_provided(
+        expected_fields={"email", "password"}
+    )
+    if not success:
+        return jsonify({"message": err_msg}), 400
+
     email = request.form.get("email")
     password = request.form.get("password")
 
@@ -57,7 +71,7 @@ def login() -> Response:
     data = jsonify({"email": email, "message": "logged in"})
     data.set_cookie(key="session_id", value=session_id)
 
-    return data
+    return data, 201
 
 
 @app.route("/sessions", methods=["DELETE"])
@@ -89,9 +103,11 @@ def profile() -> Response:
 @app.route("/reset_password", methods=["POST"])
 def get_reset_password_token() -> Tuple[Response, int]:
     """Get the token for user password reset."""
+    success, err_msg = utils.request_body_provided(expected_fields={"email"})
+    if not success:
+        return jsonify({"message": err_msg}), 400
+
     email = request.form.get("email")
-    if not email:
-        return jsonify({"message": "email missing"}), 400
 
     try:
         reset_token = AUTH.get_reset_password_token(email=email)
@@ -104,32 +120,15 @@ def get_reset_password_token() -> Tuple[Response, int]:
 @app.route("/reset_password", methods=["PUT"])
 def update_password() -> Tuple[Response, int]:
     """Update the user's password."""
-    if not request.form:
-        return (
-            jsonify(
-                {
-                    "message": "request body missing",
-                    "expected_fields": [
-                        "email",
-                        "reset_token",
-                        "new_password",
-                    ],
-                }
-            ),
-            400,
-        )
+    success, err_msg = utils.request_body_provided(
+        expected_fields={"email", "reset_token", "new_password"}
+    )
+    if not success:
+        return jsonify({"message": err_msg}), 400
 
     email = request.form.get("email")
-    if not email:
-        return jsonify({"message": "email missing"}), 400
-
     reset_token = request.form.get("reset_token")
-    if not reset_token:
-        return jsonify({"message": "reset_token missing"}), 400
-
     new_password = request.form.get("new_password")
-    if not new_password:
-        return jsonify({"message": "new_password missing"}), 400
 
     try:
         AUTH.update_password(reset_token=reset_token, password=new_password)
