@@ -2,6 +2,7 @@
 
 """Auth module."""
 import uuid
+from typing import Union
 
 import bcrypt
 from sqlalchemy.orm.exc import NoResultFound
@@ -78,3 +79,24 @@ class Auth:
     def _generate_uuid() -> str:
         """Generate UUIDs."""
         return str(uuid.uuid4())
+
+    def create_session(self, email: str) -> Union[str, None]:
+        """Create session for a user after successful login.
+
+        Args:
+            email (str): The email of the user to create the session for.
+
+        Returns:
+            str | None: The session ID is returned if the user is found,
+            None otherwise.
+        """
+        try:
+            db_user = self._db.find_user_by(email=email)
+        except NoResultFound:
+            return None
+
+        self._db.update_user(
+            user_id=db_user.id, session_id=self._generate_uuid()
+        )
+
+        return db_user.session_id
