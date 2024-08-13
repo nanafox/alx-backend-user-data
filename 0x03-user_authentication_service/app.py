@@ -2,9 +2,9 @@
 
 """App module."""
 import os
-from typing import Dict, Tuple
+from typing import Tuple
 
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 
 from auth import Auth
 
@@ -20,7 +20,7 @@ def root():
 
 
 @app.route("/users", methods=["POST"])
-def signup() -> Tuple[Dict[str, str], int]:
+def signup() -> Tuple[Response, int]:
     """Register new user."""
     email = request.form.get("email")
     password = request.form.get("password")
