@@ -71,7 +71,7 @@ def login() -> Tuple[Response, int]:
     data = jsonify({"email": email, "message": "logged in"})
     data.set_cookie(key="session_id", value=session_id)
 
-    return data, 201
+    return data, 200
 
 
 @app.route("/sessions", methods=["DELETE"])
