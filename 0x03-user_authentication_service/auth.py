@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
 """Auth module."""
+import uuid
 
 import bcrypt
 from sqlalchemy.orm.exc import NoResultFound
 
 from db import DB
+
+# noinspection PyCompatibility
 from user import User
 
 
@@ -70,3 +73,8 @@ class Auth:
             password=password.encode(),
             hashed_password=db_user.hashed_password.encode(),
         )
+
+    @staticmethod
+    def _generate_uuid() -> str:
+        """Generate UUIDs."""
+        return str(uuid.uuid4())
