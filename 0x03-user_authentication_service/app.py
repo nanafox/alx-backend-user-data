@@ -112,7 +112,7 @@ def get_reset_password_token() -> Tuple[Response, int]:
     try:
         reset_token = AUTH.get_reset_password_token(email=email)
     except ValueError:
-        return jsonify({"message": "Invalid email"}), 400
+        abort(403)
 
     return jsonify({"email": email, "reset_token": reset_token}), 200
 
