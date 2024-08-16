@@ -42,7 +42,7 @@ def users() -> Tuple[Response, int]:
             return jsonify({"message": "email already registered"}), 400
         return jsonify({"message": err_msg}), 400
 
-    return jsonify({"email": email, "message": "user created"}), 201
+    return jsonify({"email": email, "message": "user created"}), 200
 
 
 @app.route("/sessions", methods=["POST"])

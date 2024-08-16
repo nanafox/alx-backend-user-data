@@ -15,7 +15,7 @@ def register_user(email: str, password: str) -> None:
         data={"email": email, "password": password},
     )
 
-    assert response.status_code == 201
+    assert response.status_code == 200
     assert response.json() == {
         "email": email,
         "message": "user created",
